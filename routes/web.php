@@ -15,8 +15,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
     Route::get('/places/create', [PlaceController::class, 'create'])->name('places.create');
     Route::post('/places', [PlaceController::class, 'store'])->name('places.store');
+    Route::get('/places/{place}/edit', [PlaceController::class, 'edit'])->name('places.edit');
+    Route::put('/places/{place}', [PlaceController::class, 'update'])->name('places.update');
+    Route::delete('/places/{place}', [PlaceController::class, 'destroy'])->name('places.destroy');
 });
 
 require __DIR__.'/auth.php';

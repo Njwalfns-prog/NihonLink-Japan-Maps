@@ -41,13 +41,13 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Latitude</label>
                             <input type="text" name="latitude" id="latitude" value="{{ old('latitude') }}"
-                                   readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50" required>
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50" required>
                             @error('latitude') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Longitude</label>
                             <input type="text" name="longitude" id="longitude" value="{{ old('longitude') }}"
-                                   readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50" required>
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50" required>
                             @error('longitude') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -104,5 +104,22 @@
                 marker = L.marker(e.latlng).addTo(map);
             }
         });
+
+        function syncMapFromInputs() {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lng = parseFloat(document.getElementById('longitude').value);
+            if (isNaN(lat) || isNaN(lng)) return;
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+            const ll = L.latLng(lat, lng);
+            if (marker) {
+                marker.setLatLng(ll);
+            } else {
+                marker = L.marker(ll).addTo(map);
+            }
+            map.setView(ll, map.getZoom());
+        }
+
+        document.getElementById('latitude').addEventListener('input', syncMapFromInputs);
+        document.getElementById('longitude').addEventListener('input', syncMapFromInputs);
     </script>
 </x-app-layout>

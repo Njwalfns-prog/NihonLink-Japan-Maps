@@ -109,3 +109,5 @@ Web Developer | Teknik Informatika
 ---
 
 ⭐ Jika project ini bermanfaat, jangan lupa memberikan **Star** pada repository.
+=======
+Perbaikan gambar broken telah diselesaikan. Touchpad navigation pada Leaflet map juga telah digunakan.

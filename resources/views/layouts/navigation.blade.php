@@ -11,20 +11,26 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                @auth
+                @if (auth()->user()->role === 'admin')
+                    <x-nav-link :href="{{ route('dashboard') }}" :active="{{ request()->routeIs('dashboard') }}">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('places.index')" :active="request()->routeIs('places.index')">
+                    <x-nav-link :href="{{ route('places.index') }}" :active="{{ request()->routeIs('places.index') }}">
                         {{ __('Daftar Tempat') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('places.create')" :active="request()->routeIs('places.create')">
+                    <x-nav-link :href="{{ route('places.create') }}" :active="{{ request()->routeIs('places.create') }}">
                         {{ __('Tambah Tempat') }}
                     </x-nav-link>
-                    <x-nav-link :href="url('/')" :active="request()->is('/')">
-                        {{ __('Lihat Peta Utama') }}
+                @elseif (auth()->user()->role === 'member')
+                    <x-nav-link :href="{{ route('places.suggest') }}" :active="{{ request()->routeIs('places.suggest') }}">
+                        {{ __('Ajukan Tempat') }}
                     </x-nav-link>
-                </div>
+                @endif
+                <x-nav-link :href="{{ url('/') }}" :active="{{ request()->is('/') }}">
+                    {{ __('Lihat Peta Utama') }}
+                </x-nav-link>
+                @endauth
             </div>
 
             <!-- Settings Dropdown -->

@@ -1,0 +1,1 @@
+# j-map project - A repository for a mapping application.\n\n<!--(file updated manually)\n-->\n## Contributors\n\n<!--List of contributors in the format (Name)<https://github.com/username

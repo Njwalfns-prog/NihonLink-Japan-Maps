@@ -1,1 +1,3 @@
-// Implement route for showing all pending places
+Route::get('/approved-places', [PlaceController::class, 'showApprovedPlaces']);
+
+Route::get('/approved-places', [PlaceController::class, 'showApprovedPlaces']);

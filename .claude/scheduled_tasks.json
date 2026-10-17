@@ -1,0 +1,11 @@
+{
+  "tasks": [
+    {
+      "id": "2e8b052b",
+      "cron": "*/5 * * * *",
+      "prompt": "Run code review on all pending places",
+      "createdAt": 1792244844115,
+      "recurring": true
+    }
+  ]
+}

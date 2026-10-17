@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class AddUserIdAndStatusToPlacesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('places', function (Blueprint $table) {
-            //
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->enum('status', ['pending','approved','rejected'])->default('pending');
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('places', function (Blueprint $table) {
-            //
+            // $table->dropForeign(['user_id']);
+            // $table->dropColumn('status');
         });
     }
 };

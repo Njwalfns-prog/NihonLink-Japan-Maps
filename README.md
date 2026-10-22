@@ -120,10 +120,10 @@ resources/
 
 | Nama | Peran |
 |---|---|
-| [Najwa Alief Nurshifa | Frontend Developer |
-| [Apri Yoda Pratama] | Backend Developer |
-| [Eka Nurbella] | UI/UX Designer |
-| [Wylson Marco Adelwin] | Data & Research |
+| Najwa Alief Nurshifa | Frontend Developer |
+| Apri Yoda Pratama | Backend Developer |
+| Eka Nurbella | UI/UX Designer |
+| Wylson Marco Adelwin | Data & Research |
 
 ---
 

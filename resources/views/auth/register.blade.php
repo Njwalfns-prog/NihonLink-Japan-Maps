@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Daftar &mdash; NihonLink J-Map</title>
+    <title>NihonLink - Peta Subkultur Jepang</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/nihonlink-logo.png.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .jp-pattern {
@@ -63,11 +64,12 @@
         {{-- Branding --}}
         <div class="text-center">
             <div class="flex items-center justify-center gap-3 mb-3">
+                <img src="{{ asset('images/nihonlink-logo.png.png') }}" alt="Logo NihonLink" class="h-14 w-14 object-contain">
                 <span class="torii-accent"></span>
                 <h1 class="text-4xl font-bold tracking-tight text-white">NihonLink</h1>
                 <span class="torii-accent"></span>
             </div>
-            <p class="text-rose-400 text-lg font-medium tracking-widest uppercase mb-6">J-Map</p>
+            <p class="text-rose-400 text-lg font-medium tracking-widest uppercase mb-6">NihonLink</p>
             <p class="text-slate-400 text-base leading-relaxed max-w-sm">
                 Komunitas peta interaktif destinasi &amp; kuliner Jepang.<br>
                 Temukan, bagikan, dan eksplorasi bersama.
@@ -88,16 +90,12 @@
 
             {{-- Mobile branding --}}
             <div class="flex items-center gap-2 mb-8 md:hidden">
-                <div class="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 2a8 8 0 100 16A8 8 0 0010 2z"/>
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-white">NihonLink J-Map</span>
+                <img src="{{ asset('images/nihonlink-logo.png.png') }}" alt="Logo NihonLink" class="h-10 w-10 object-contain">
+                <span class="text-xl font-bold text-white">NihonLink</span>
             </div>
 
             <h2 class="text-3xl font-bold text-white mb-1">Buat Akun</h2>
-            <p class="text-slate-400 mb-8 text-sm">Bergabunglah dan mulai jelajahi komunitas J-Map.</p>
+            <p class="text-slate-400 mb-8 text-sm">Bergabunglah dan mulai jelajahi komunitas NihonLink.</p>
 
             <form method="POST" action="{{ route('register') }}" class="space-y-5">
                 @csrf

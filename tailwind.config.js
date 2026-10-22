@@ -12,7 +12,15 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // Font utama J-Map
+                sans:    ['Inter', ...defaultTheme.fontFamily.sans],
+                heading: ['"Noto Serif JP"', 'Georgia', 'serif'],
+            },
+            colors: {
+                // Palet warna J-Map
+                jred:   '#C1272D',
+                jcream: '#F7F1E3',
+                jblack: '#1A1A1A',
             },
         },
     },

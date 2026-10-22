@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'NihonLink J-Map') }}</title>
+    <title>NihonLink - Peta Subkultur Jepang</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/nihonlink-logo.png.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -48,9 +49,7 @@
         <div class="relative z-10 flex flex-col justify-center items-start p-16 text-white max-w-xl">
             {{-- Logo --}}
             <div class="flex items-center gap-3 mb-8">
-                <svg class="w-10 h-10 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                </svg>
+                <img src="{{ asset('images/nihonlink-logo.png.png') }}" alt="Logo NihonLink" class="h-10 w-10 object-contain">
                 <span class="text-2xl font-bold tracking-wide">NihonLink J-MAP</span>
             </div>
 

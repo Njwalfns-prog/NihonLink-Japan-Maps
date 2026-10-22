@@ -1,184 +1,413 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J-Map - Japanese Subculture Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .leaflet-container { touch-action: auto !important; outline: none; }
-        .leaflet-popup-content { margin: 12px !important; }
-    </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.css" />
-</head>
-<body class="font-sans antialiased bg-gray-50">
-    <!-- Navbar -->
-    <header class="bg-white shadow-2xl">
-        <nav class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Brand -->
-            <a href="{{ url('/') }}" class="text-2xl font-bold text-gray-900">J-Map</a>
-            <!-- Right -->
-            @auth
-                <a href="{{ url('/dashboard') }}" class="text-gray-700 hover:text-blue-600 transition font-semibold">Dashboard</a>
-            @else
-                <a href="{{ url('/login') }}" class="text-gray-700 hover:text-blue-600 transition font-semibold">Login</a>
-            @endauth
-        </nav>
-    </header>
+<x-app-layout>
 
-    <!-- Container -->
-    <div class="max-w-7xl mx-auto p-6">
-        <!-- Peta -->
-        <div id="map" class="relative w-full h-[500px] rounded-2xl shadow-2xl" style="z-index: 1;"></div>
+{{-- ══════════════════════════════════════════════════════════════
+     Splash Screen (hanya halaman utama, sekali per sesi)
+     Partial terpisah agar mudah diatur oleh splash.js
+═════════════════════════════════════════════════════════════════ --}}
+@push('splash')
+    @include('partials.splash')
+    @if(false)
+    @include('partials.gate')
+    @endif
+@endpush
 
-        <!-- Filter -->
-        <div class="flex flex-wrap gap-3">
-    <button class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow transition font-medium category-filter cursor-pointer" onclick="filterPlaces('semua')">Semua</button>
-    @foreach($categories as $cat)
-        <button class="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow transition font-medium category-filter cursor-pointer" onclick="filterPlaces('{{ strtolower($cat) }}')">{{ ucfirst($cat) }}</button>
-    @endforeach
-</div>
+{{-- Hitung data statistik dari database --}}
+@php
+    $totalPlaces     = $places->count();
+    $totalCategories = $categories->count();
+@endphp
 
-        <!-- Daftar Lokasi (Cards) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-            @foreach($places as $place)
-                <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden place-card" data-category="{{ strtolower($place->category) }}">
-                    @if($place->image_url)
-                        <img src="{{ $place->image_url }}" alt="{{ $place->name }}" class="object-cover h-36 w-full rounded-t-xl" onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=No+Image';">
-                    @else
-                        <div class="h-36 bg-gray-200 flex items-center justify-center">
-                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159a2.25 2.25 0 0 0 3.182 0l5.159-5.159"/></svg>
-                        </div>
-                    @endif
-                    <div class="p-3">
-                        <span class="inline-block bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full text-sm mb-2">{{ $place->category }}</span>
-                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $place->name }}</h3>
-                        <p class="text-sm text-gray-600 mb-2">{{ \Illuminate\Support\Str::limit($place->description, 80) }}</p>
-                        <div class="flex justify-between items-center">
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-1 px-2 rounded" onclick='openDetailModal(@json($place))'>Detail</button>
-                            <button class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-1 px-2 rounded" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination={{ $place->latitude }},{{ $place->longitude }}','_blank')">Rute</button>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+{{--
+    HERO LAMA – Disembunyikan dari halaman utama (peta jadi fokus pertama).
+    TIDAK dihapus agar bisa diaktifkan kembali bila diperlukan.
+    Uncomment blok ini untuk menampilkan kembali hero di atas peta.
+--}}
+{{--
+@include('partials.hero')
+@include('partials.stats', [
+    'totalPlaces'     => $totalPlaces,
+    'totalCategories' => $totalCategories,
+])
+--}}
+
+{{-- ══════════════════════════════════════════════════════════════
+     SECTION PETA UTAMA – Fullscreen 100vh dikurangi navbar
+     Panel rekomendasi di SISI KANAN peta (desktop).
+     Di HP, panel berubah menjadi bottom sheet.
+═════════════════════════════════════════════════════════════════ --}}
+<section id="peta" class="section-map-full" aria-label="Peta interaktif NihonLink">
+
+    {{-- Layout: peta kiri + panel kanan --}}
+    <div class="map-full-layout">
+
+        {{-- ── Peta Leaflet (fokus utama) ─────────────────────── --}}
+        <div class="map-full-container" role="application" aria-label="Peta interaktif NihonLink">
+            <div id="map"></div>
         </div>
 
-        <!-- Modal Detail -->
-        <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-            <div class="bg-white rounded-lg overflow-hidden shadow-lg max-w-lg w-full relative">
-                <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onclick="closeDetailModal()">&times;</button>
-                <img id="modalImg" src="" alt="" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=No+Image'">
-                <div class="p-4">
-                    <h2 id="modalTitle" class="text-2xl font-bold mb-2"></h2>
-                    <span id="modalBadge" class="inline-block bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full text-sm mb-2"></span>
-                    <p id="modalDesc" class="text-gray-700 mb-4"></p>
-                    <p class="text-sm text-gray-500 mb-2" id="modalCoords"></p>
-                    <a id="modalMapLink" href="#" target="_blank" class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded">Buka di Google Maps</a>
+        {{-- ── Panel Rekomendasi KANAN (desktop sidebar / HP bottom sheet) ── --}}
+        <aside
+            id="map-sidebar"
+            class="map-sidebar"
+            aria-label="Panel rekomendasi tempat"
+        >
+            {{-- Handle bottom sheet (HP) --}}
+            <div class="map-sidebar__handle" id="sidebar-handle" aria-hidden="true">
+                <div class="map-sidebar__handle-bar"></div>
+            </div>
+
+            {{-- Header panel --}}
+            <div class="map-sidebar__header">
+                <h2 class="map-sidebar__title">
+                    <span aria-hidden="true">🗾</span> Rekomendasi Tempat
+                </h2>
+
+                {{-- Search bar --}}
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                    <input
+                        id="location-search"
+                        type="search"
+                        class="search-input"
+                        placeholder="Cari nama, kota, deskripsi..."
+                        aria-label="Cari lokasi"
+                        autocomplete="off"
+                    >
+                </div>
+
+                {{-- Chip filter kategori --}}
+                <div class="filter-chips" role="group" aria-label="Filter kategori">
+                    <button class="chip active" data-filter="semua" data-label="Semua" aria-pressed="true">
+                        🗾 Semua
+                    </button>
+                    <button class="chip" data-filter="cosplay" data-label="Cosplay" aria-pressed="false">
+                        🎭 Cosplay
+                    </button>
+                    <button class="chip" data-filter="event" data-label="Event" aria-pressed="false">
+                        🎉 Event
+                    </button>
+                    <button class="chip" data-filter="komunitas" data-label="Komunitas" aria-pressed="false">
+                        👥 Komunitas
+                    </button>
+                    <button class="chip" data-filter="merchandise" data-label="Merchandise" aria-pressed="false">
+                        🛍️ Merchandise
+                    </button>
+                    <button class="chip" data-filter="anime" data-label="Anime" aria-pressed="false">
+                        🎌 Anime
+                    </button>
+
+                    {{-- Kategori tambahan dari database --}}
+                    @foreach($categories as $cat)
+                        @php
+                            $catSlug = strtolower(str_replace(' ', '_', $cat));
+                            $known = ['cosplay','event','komunitas','merchandise','anime'];
+                        @endphp
+                        @if(!in_array($catSlug, $known))
+                            <button class="chip" data-filter="{{ $catSlug }}" data-label="{{ ucfirst($cat) }}" aria-pressed="false">
+                                📌 {{ ucfirst($cat) }}
+                            </button>
+                        @endif
+                    @endforeach
                 </div>
             </div>
+
+            {{-- Daftar lokasi (diisi oleh map.js, skeleton saat loading) --}}
+            <div
+                id="location-list"
+                class="map-sidebar__list"
+                role="list"
+                aria-label="Daftar lokasi"
+                aria-live="polite"
+            >
+                {{-- Skeleton loading: tampil sebelum JS selesai render --}}
+                @for($i = 0; $i < 4; $i++)
+                <div class="skeleton-card" aria-hidden="true">
+                    <div class="skeleton skeleton--thumb"></div>
+                    <div class="skeleton-card__lines">
+                        <div class="skeleton skeleton--tag"></div>
+                        <div class="skeleton skeleton--title"></div>
+                        <div class="skeleton skeleton--text"></div>
+                        <div class="skeleton skeleton--text skeleton--text-short"></div>
+                    </div>
+                </div>
+                @endfor
+            </div>
+        </aside>
+
+    </div>
+</section>
+
+{{--
+    SECTION KATEGORI LAMA – Dipindah ke bawah peta, masih tampil.
+    Bagian kategori tetap ditampilkan di bawah peta.
+--}}
+<div class="seigaiha-divider" aria-hidden="true"></div>
+
+<section id="kategori" class="section-categories">
+    <div class="section-map__inner" style="padding-bottom: 0;">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-eyebrow">🎌 Kategori</span>
+            <h2 class="section-title">
+                Jelajahi Berdasarkan <span class="section-title-accent">Kategori</span>
+            </h2>
+            <p class="section-desc">
+                Dari cosplay hingga komunitas lokal – temukan sesuai minatmu.
+            </p>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.js"></script>
-    <script>
-        var map = L.map('map', { dragging: true, touchZoom: true, scrollWheelZoom: true, gestureHandling: true }).setView([-2.5489, 118.0149], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    <div class="categories-grid">
+        {{-- Card Cosplay --}}
+        <div
+            class="category-card"
+            data-aos="fade-up"
+            data-aos-delay="0"
+            role="button"
+            tabindex="0"
+            onclick="filterByCategory('cosplay')"
+            aria-label="Filter kategori Cosplay"
+        >
+            <span class="category-card__icon" aria-hidden="true">🎭</span>
+            <p class="category-card__name">Cosplay</p>
+            <p class="category-card__count">Studio, kontes &amp; komunitas</p>
+        </div>
 
-        function openDetailModal(data) {
-            document.getElementById('modalImg').src = data.image_url ? data.image_url : 'https://placehold.co/600x400?text=No+Image';
-            document.getElementById('modalTitle').textContent = data.name;
-            document.getElementById('modalBadge').textContent = data.category;
-            document.getElementById('modalDesc').textContent = data.description || '';
-            document.getElementById('modalCoords').textContent = `Lat: ${data.latitude}, Lng: ${data.longitude}`;
-            document.getElementById('modalMapLink').href = `https://www.google.com/maps/search/?api=1&query=${data.latitude},${data.longitude}`;
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
-        function closeDetailModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
+        {{-- Card Anime --}}
+        <div
+            class="category-card"
+            data-aos="fade-up"
+            data-aos-delay="80"
+            role="button"
+            tabindex="0"
+            onclick="filterByCategory('anime')"
+            aria-label="Filter kategori Anime"
+        >
+            <span class="category-card__icon" aria-hidden="true">🎌</span>
+            <p class="category-card__name">Anime</p>
+            <p class="category-card__count">Perpustakaan &amp; club</p>
+        </div>
 
-        var places = @json($places);
-        var allMarkers = [];
+        {{-- Card Event --}}
+        <div
+            class="category-card"
+            data-aos="fade-up"
+            data-aos-delay="160"
+            role="button"
+            tabindex="0"
+            onclick="filterByCategory('event')"
+            aria-label="Filter kategori Event"
+        >
+            <span class="category-card__icon" aria-hidden="true">🎉</span>
+            <p class="category-card__name">Event</p>
+            <p class="category-card__count">Festival &amp; kompetisi</p>
+        </div>
 
-        places.forEach(function(place) {
-            let fallbackImg = 'https://images.unsplash.com/photo-1580442531649-6f947385f0cd?q=80&w=400&auto=format&fit=crop';
-            let imageUrl = place.image ? '/storage/' + place.image : fallbackImg;
+        {{-- Card Komunitas --}}
+        <div
+            class="category-card"
+            data-aos="fade-up"
+            data-aos-delay="240"
+            role="button"
+            tabindex="0"
+            onclick="filterByCategory('komunitas')"
+            aria-label="Filter kategori Komunitas"
+        >
+            <span class="category-card__icon" aria-hidden="true">👥</span>
+            <p class="category-card__name">Komunitas</p>
+            <p class="category-card__count">Gathering &amp; diskusi</p>
+        </div>
 
-            let markerColor = '#3b82f6';
-            let markerIcon = '<i class="fa-solid fa-location-dot"></i>';
-            let category = place.category.toLowerCase();
+        {{-- Card Merchandise --}}
+        <div
+            class="category-card"
+            data-aos="fade-up"
+            data-aos-delay="320"
+            role="button"
+            tabindex="0"
+            onclick="filterByCategory('merchandise')"
+            aria-label="Filter kategori Merchandise"
+        >
+            <span class="category-card__icon" aria-hidden="true">🛍️</span>
+            <p class="category-card__name">Merchandise</p>
+            <p class="category-card__count">Toko &amp; import langsung</p>
+        </div>
+    </div>
+</section>
 
-            if (category.includes('cosplay')) {
-                markerColor = '#8b5cf6';
-                markerIcon = '<i class="fa-solid fa-mask"></i>';
-            } else if (category.includes('event') || category.includes('jejepangan')) {
-                markerColor = '#f59e0b';
-                markerIcon = '<i class="fa-solid fa-ticket"></i>';
-            } else if (category.includes('toko') || category.includes('merch')) {
-                markerColor = '#10b981';
-                markerIcon = '<i class="fa-solid fa-store"></i>';
-            } else if (category.includes('makanan') || category.includes('resto') || category.includes('cafe')) {
-                markerColor = '#ef4444';
-                markerIcon = '<i class="fa-solid fa-bowl-food"></i>';
-            }
+<div class="seigaiha-divider seigaiha-divider--dark" aria-hidden="true"></div>
 
-            let customMarker = L.divIcon({
-                className: 'bg-transparent',
-                html: `
-                    <div style="position: relative; width: 36px; height: 44px; filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.3));">
-                        <div style="position: absolute; width: 34px; height: 34px; background-color: ${markerColor}; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid white; left: 1px; top: 1px;"></div>
-                        <div style="position: absolute; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; left: 0; top: 0; font-size: 15px; color: white; z-index: 10;">${markerIcon}</div>
+{{-- ══════════════════════════════════════════════════════════════
+     SECTION TENTANG (dipindah ke bawah, tetap tampil)
+═════════════════════════════════════════════════════════════════ --}}
+<section id="tentang" class="section-about">
+    <div class="section-about__inner">
+
+        {{-- Kiri: info proyek + CTA --}}
+        <div class="section-about__content" data-aos="fade-right">
+            <span class="section-eyebrow" style="color:var(--color-red-light)">⛩ Tentang NihonLink</span>
+            <h2 class="section-title" style="color:var(--color-white)">
+                Peta untuk<br>
+                <span class="section-title-accent">Komunitas Jejepangan</span>
+            </h2>
+            <p style="color:rgba(255,255,255,.65);font-size:1rem;line-height:1.75;margin-bottom:var(--space-6)">
+                NihonLink membantu penggemar subkultur Jepang menemukan lokasi-lokasi relevan
+                di seluruh Indonesia — studio cosplay, toko merchandise, event anime, hingga
+                komunitas lokal. Semua dalam satu peta interaktif.
+            </p>
+
+            {{-- Daftar fitur --}}
+            <ul class="about-features" role="list">
+                <li class="about-feature">
+                    <span class="about-feature__icon" aria-hidden="true">🗾</span>
+                    <div>
+                        <strong>Peta Interaktif</strong>
+                        <p>Marker kustom, popup detail, navigasi langsung ke Google Maps.</p>
                     </div>
-                `,
-                iconSize: [36, 44],
-                iconAnchor: [18, 44],
-                popupAnchor: [0, -44]
-            });
+                </li>
+                <li class="about-feature">
+                    <span class="about-feature__icon" aria-hidden="true">❤️</span>
+                    <div>
+                        <strong>Sistem Like</strong>
+                        <p>Tandai lokasi favoritmu — status tersimpan di perangkatmu.</p>
+                    </div>
+                </li>
+                <li class="about-feature">
+                    <span class="about-feature__icon" aria-hidden="true">🔍</span>
+                    <div>
+                        <strong>Filter &amp; Pencarian</strong>
+                        <p>Saring berdasarkan kategori atau nama secara real-time.</p>
+                    </div>
+                </li>
+            </ul>
 
-            let popupContent = `
-                <div style="font-family: ui-sans-serif, system-ui, sans-serif;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${fallbackImg}';" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
-                    <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold; color: #1f2937; line-height: 1.2;">${place.name}</h3>
-                    <p style="margin: 0 0 6px 0; font-size: 11px; color: ${markerColor}; font-weight: bold;">${markerIcon} ${place.category}</p>
-                    <a href="#" style="display: block; text-align: center; background-color: #3b82f6; color: white; padding: 6px 0; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">Lihat Detail &rarr;</a>
+            {{-- CTA: guest hanya melihat peta dan login/daftar --}}
+            @guest
+            <div class="about-cta" data-aos="fade-up" data-aos-delay="120">
+                <p class="about-cta__text">Daftarkan dirimu untuk memberi like dan ulasan!</p>
+                <div class="about-cta__buttons">
+                    <a href="{{ url('/register') }}" class="btn btn--primary btn--lg">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i> Daftar Sekarang
+                    </a>
+                    <a href="{{ url('/login') }}" class="btn btn--outline btn--lg">
+                        Sudah punya akun? Masuk
+                    </a>
                 </div>
-            `;
+            </div>
+            @endguest
 
-            let marker = L.marker([place.latitude, place.longitude], { icon: customMarker })
-                .bindPopup(popupContent, { maxWidth: 180, minWidth: 180 });
+            @auth
+            <div class="about-cta">
+                {{--
+                    Tombol Dashboard hanya untuk semua user login.
+                    Tombol Tambah Lokasi HANYA untuk admin (ikuti role yang sama
+                    dengan navigation.blade.php: auth()->user()->role === 'admin').
+                    TODO: Pastikan kolom `role` tersedia di model User.
+                --}}
+                <a href="{{ url('/dashboard') }}" class="btn btn--primary btn--lg">
+                    <i class="fas fa-th-large" aria-hidden="true"></i> Dashboard
+                </a>
+                @if(auth()->user()->role === 'admin')
+                <a href="{{ url('/places/create') }}" class="btn btn--outline btn--lg">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Tambah Lokasi
+                </a>
+                @endif
+            </div>
+            @endauth
+        </div>
 
-            let markerCategory = place.category.toLowerCase();
-            allMarkers.push({ layer: marker, category: markerCategory });
-            marker.addTo(map);
-        });
+        {{-- Kanan: tim + tech stack --}}
+        <div class="section-about__team" data-aos="fade-left" data-aos-delay="80">
+            <h3 class="team-title">Tim Pengembang</h3>
+            <div class="team-grid">
+                <div class="team-card">
+                    <span class="team-card__avatar" aria-hidden="true">🧑‍💻</span>
+                    <div>
+                        <p class="team-card__name">Frontend Dev</p>
+                        <p class="team-card__role">UI/UX &amp; Animasi</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <span class="team-card__avatar" aria-hidden="true">🧑‍💻</span>
+                    <div>
+                        <p class="team-card__name">Backend Dev</p>
+                        <p class="team-card__role">API &amp; Database</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <span class="team-card__avatar" aria-hidden="true">🎨</span>
+                    <div>
+                        <p class="team-card__name">UI/UX Designer</p>
+                        <p class="team-card__role">Desain &amp; Riset</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <span class="team-card__avatar" aria-hidden="true">📊</span>
+                    <div>
+                        <p class="team-card__name">Data &amp; Research</p>
+                        <p class="team-card__role">Konten &amp; Validasi</p>
+                    </div>
+                </div>
+            </div>
 
-        window.filterPlaces = function(selectedCategory) {
-            selectedCategory = selectedCategory.toLowerCase();
+            {{-- Tech stack --}}
+            <div class="tech-stack">
+                <p class="tech-stack__label">Dibangun dengan</p>
+                <div class="tech-stack__badges">
+                    <span class="tech-badge">⚡ Laravel</span>
+                    <span class="tech-badge">🗺️ Leaflet.js</span>
+                    <span class="tech-badge">⚙️ Vite</span>
+                    <span class="tech-badge">🎨 Tailwind</span>
+                    <span class="tech-badge">🌍 OpenStreetMap</span>
+                </div>
+            </div>
+        </div>
 
-            allMarkers.forEach(function(item) {
-                if (selectedCategory === 'semua' || item.category.includes(selectedCategory)) {
-                    if (!map.hasLayer(item.layer)) map.addLayer(item.layer);
-                } else {
-                    if (map.hasLayer(item.layer)) map.removeLayer(item.layer);
-                }
-            });
+    </div>
+</section>
 
-            let cards = document.querySelectorAll('.place-card');
-            cards.forEach(function(card) {
-                let cardCat = card.getAttribute('data-category') || '';
-                if (selectedCategory === 'semua' || cardCat.includes(selectedCategory)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        };
-    </script>
-</body>
-</html>
+{{-- Script: data dari backend + helper --}}
+@push('scripts')
+@php
+    $mappedPlaces = $places->map(function ($p) {
+        return [
+            'id'          => $p->id,
+            'nama'        => $p->name,
+            'kategori'    => strtolower($p->category),
+            'lat'         => (float) $p->latitude,
+            'lng'         => (float) $p->longitude,
+            'kota'        => 'Indonesia',   // TODO: tambahkan kolom city di model
+            'deskripsi'   => $p->description ?? '',
+            'jumlah_like' => 0,             // TODO: sambungkan ke tabel likes
+            'image'       => $p->image ?? null,
+            'rating'      => (float) ($p->reviews_avg_rating ?? 0),
+            'review_count'=> (int) ($p->reviews_count ?? 0),
+            'review_url'  => route('places.reviews.create', $p),
+        ];
+    })->values()->all();
+@endphp
+<script>
+    /**
+     * Data dari Laravel (places dari database).
+     * Digunakan oleh map.js jika tersedia.
+     */
+    window.jmapPlaces = @json($mappedPlaces);
+
+    /**
+     * Helper global: klik card kategori → scroll ke peta + terapkan filter.
+     * Digunakan oleh category-card di section bawah.
+     */
+    window.filterByCategory = function(cat) {
+        const peta = document.getElementById('peta');
+        if (peta) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Peta di atas
+        }
+        // Aktifkan chip filter yang sesuai
+        setTimeout(() => {
+            const chip = document.querySelector(`.chip[data-filter="${cat}"]`);
+            if (chip) chip.click();
+        }, 400);
+    };
+</script>
+@endpush
+
+</x-app-layout>

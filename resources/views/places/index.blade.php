@@ -20,7 +20,7 @@
                 <th class="px-4 py-2 border">Kategori</th>
                 <th class="px-4 py-2 border">Foto</th>
                 <th class="px-4 py-2 border">Koordinat</th>
-                <th class="px-4 py-2 border">Aksi</th>
+                <th class="px-4 py-2 border">Deskripsi</th>
             </tr>
         </thead>
         <tbody>
@@ -38,14 +38,7 @@
                     <td class="px-4 py-2 border">
                         {{ $place->latitude }}, {{ $place->longitude }}
                     </td>
-                    <td class="px-4 py-2 border">
-                        <a href="{{ route('places.edit', $place) }}" class="text-blue-600 hover:underline mr-2">Edit</a>
-                        <form action="{{ route('places.destroy', $place) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus tempat ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:underline">Hapus</button>
-                        </form>
-                    </td>
+                    <td class="px-4 py-2 border">{{ $place->description ?: '—' }}</td>
                 </tr>
             @empty
                 <tr><td colspan="5" class="px-4 py-2 text-center">Tidak ada data tempat.</td></tr>
@@ -53,7 +46,7 @@
         </tbody>
     </table>
     <div class="mt-4">
-        <a href="{{ route('places.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded">Tambah Tempat Baru</a>
+        <a href="{{ route('places.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded">Ajukan Tempat Baru</a>
     </div>
             </div>
         </div>

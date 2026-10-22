@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#F7E9D7"/><stop offset=".62" stop-color="#F5D6C8"/><stop offset="1" stop-color="#D7A6A0"/></linearGradient>
+    <linearGradient id="fuji" x2=".9" y2="1"><stop stop-color="#577D9B"/><stop offset="1" stop-color="#263F5C"/></linearGradient>
+    <linearGradient id="water" x2="0" y2="1"><stop stop-color="#91BCC3"/><stop offset="1" stop-color="#426D7E"/></linearGradient>
+    <linearGradient id="hill" x2="0" y2="1"><stop stop-color="#657B61"/><stop offset="1" stop-color="#344C48"/></linearGradient>
+    <pattern id="waves" width="140" height="54" patternUnits="userSpaceOnUse" fill="none" stroke="#D8E6D9" stroke-opacity=".22" stroke-width="3"><path d="M0 54a70 70 0 0 1 140 0M35 54a35 35 0 0 1 70 0"/></pattern>
+    <g id="blossom" fill="#E99A9C" stroke="#9E5B60" stroke-width="2"><ellipse cy="-13" rx="8" ry="13"/><ellipse cy="-13" rx="8" ry="13" transform="rotate(72)"/><ellipse cy="-13" rx="8" ry="13" transform="rotate(144)"/><ellipse cy="-13" rx="8" ry="13" transform="rotate(216)"/><ellipse cy="-13" rx="8" ry="13" transform="rotate(288)"/><circle r="4" fill="#F7D994" stroke="none"/></g>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1920v1080H0z"/>
+  <circle cx="970" cy="278" r="112" fill="#EAAE86" opacity=".48"/><circle cx="970" cy="278" r="76" fill="#F5D2A3" opacity=".68"/>
+  <!-- Gunung Fuji dan kabut -->
+  <path d="m55 733 355-479 106 126 74-97 345 450H55Z" fill="url(#fuji)"/>
+  <path d="m410 254 106 126 74-97 93 122-82-31-45 31-53-37-48 37-44-33-59 29Z" fill="#F8F0E5"/>
+  <path d="M72 727q182-64 381 0t405 0v135H72z" fill="#F7E8D8" opacity=".72"/>
+  <!-- Pagoda silhouette -->
+  <g fill="#6F3434" stroke="#41252C" stroke-width="8" stroke-linejoin="round">
+    <path d="M1420 685h385l-42 28h-301zM1451 588h323l-40 27h-242zM1481 492h263l-34 27h-195zM1511 400h205l-31 26h-143z"/>
+    <path d="M1490 713h245l-25 34h-195zM1520 615h185l-22 32h-141zM1551 519h123l-18 32h-87zM1577 427h73l-12 29h-50z"/>
+    <path d="M1540 747v98h145v-98M1563 649v70h100v-70M1583 552v69h61v-69M1594 460v62h40v-62M1612 284v116"/>
+    <path d="M1606 288q8-41 15-78 6 37 14 78z"/>
+  </g>
+  <!-- Torii -->
+  <g fill="#AE3E3E" stroke="#632D35" stroke-width="10" stroke-linejoin="round">
+    <path d="M1485 722 1502 458h50l19 264zM1748 722l18-264h50l17 264z"/>
+    <path d="M1421 443q205 37 420 0l-29 40q-184 35-365 0zM1440 413q195 29 382 0l-16 29q-175 28-350 0z"/>
+    <path d="M1470 516h360v24h-360z"/>
+  </g>
+  <!-- Valle, sakura groves, and lake -->
+  <path d="M0 746q240-88 475 14 180 75 376-14 208-96 409-6 261 118 660 2v338H0z" fill="url(#hill)"/>
+  <path d="M0 836q249-111 494-20 230 85 431 3 258-105 503-7 211 84 492 20v248H0z" fill="url(#water)"/>
+  <path d="M0 836q249-111 494-20 230 85 431 3 258-105 503-7 211 84 492 20v248H0z" fill="url(#waves)"/>
+  <path d="M0 936q270-97 525-11t504 5q292-86 566 17 143 53 325 19v114H0z" fill="#E9C7B6" opacity=".72"/>
+  <!-- Sakura branches frame the composition -->
+  <g stroke="#53333A" stroke-width="24" stroke-linecap="round" fill="none"><path d="M-40 76q205 72 337 211t202 90M13 287q148-21 242-112M178 193q5-98 83-146M1960 42q-168 111-264 254t-184 106M1904 244q-159-13-251-120M1779 176q-5-95-73-143"/></g>
+  <g opacity=".95">
+    <use href="#blossom" x="80" y="119"/><use href="#blossom" x="187" y="161"/><use href="#blossom" x="286" y="233"/><use href="#blossom" x="393" y="365"/><use href="#blossom" x="211" y="278"/><use href="#blossom" x="130" y="308"/>
+    <use href="#blossom" x="1814" y="102"/><use href="#blossom" x="1717" y="153"/><use href="#blossom" x="1620" y="225"/><use href="#blossom" x="1512" y="355"/><use href="#blossom" x="1704" y="277"/><use href="#blossom" x="1787" y="309"/>
+    <use href="#blossom" x="568" y="199" transform="scale(.8)"/><use href="#blossom" x="1330" y="206" transform="scale(.75)"/>
+  </g>
+  <!-- kelopak -->
+  <g fill="#F3C2B6" opacity=".86"><path d="M609 405q15-16 30 1-7 17-23 15-14-2-7-16Z"/><path d="M1278 337q16-15 29 3-8 16-24 13-13-4-5-16Z"/><path d="M954 689q16-15 28 4-9 15-24 11-13-5-4-15Z"/><path d="M1104 520q13-17 29-2-5 18-21 17-14 0-8-15Z"/><path d="M740 580q13-17 29-2-5 18-21 17-14 0-8-15Z"/></g>
+</svg>

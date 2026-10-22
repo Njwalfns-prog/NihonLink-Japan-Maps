@@ -120,10 +120,10 @@ resources/
 
 | Nama | Peran |
 |---|---|
-| [Nama Anggota] | Frontend Developer |
-| [Nama Anggota] | Backend Developer |
-| [Nama Anggota] | UI/UX Designer |
-| [Nama Anggota] | Data & Research |
+| [Najwa Alief Nurshifa | Frontend Developer |
+| [Apri Yoda Pratama] | Backend Developer |
+| [Eka Nurbella] | UI/UX Designer |
+| [Wylson Marco Adelwin] | Data & Research |
 
 ---
 
